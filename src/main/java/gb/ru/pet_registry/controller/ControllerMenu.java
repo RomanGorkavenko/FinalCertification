@@ -1,5 +1,6 @@
 package gb.ru.pet_registry.controller;
 
+import gb.ru.pet_registry.data.Counter;
 import gb.ru.pet_registry.data.Kind;
 import gb.ru.pet_registry.data.Pet;
 
@@ -20,55 +21,59 @@ public class ControllerMenu {
     public void menu() {
         List<Pet> pets = new ArrayList<>();
         Pet pet;
-        while (true) {
+        try (Counter counter = new Counter()) {
+            while (true) {
 
-            String getPet = "1. Завести новое животное. \n2. Посмотреть список животных.\n" +
-                    "3. Посмотреть список команд, которое выполняет животное.\n4. Обучить животное новой команде.\n" +
-                    "5. Выйти.\nВведите 1, 2, 3, 4 или 5.\n";
-            int answer = inputNumber(getPet, 5);
+                String getPet = "1. Завести новое животное. \n2. Посмотреть список животных.\n" +
+                        "3. Посмотреть список команд, которое выполняет животное.\n4. Обучить животное новой команде.\n" +
+                        "5. Выйти.\nВведите 1, 2, 3, 4 или 5.\n";
+                int answer = inputNumber(getPet, 5);
 
-            switch (answer) {
-                case 1:
-                    pets.add(addPet());
-                    System.out.println("=".repeat(50) + "\n");
-                    break;
-                case 2:
-                    if (checkingForThePresenceOfPets(pets)) break;
-                    System.out.println("=".repeat(50) + "\n");
-                    break;
-                case 3:
-                    if (checkingForThePresenceOfPets(pets)) break;
-                    System.out.println("Введите имя животного, список команд которого хотите увидеть.");
-                    String namePet = input.next();
-                    pet = controllerPet.findPetName(pets, namePet);
-                    if (checkingNameForNull(pet)) break;
-                    printCommand(pet.getCommands());
-                    System.out.println("=".repeat(50) + "\n");
-                    break;
-                case 4:
-                    if (checkingForThePresenceOfPets(pets)) break;
-                    System.out.println("Введите имя животного, которому хотите добавить команду.");
-                    String namePetAddCommand = input.next();
-                    System.out.println("Введите команду.");
-                    String command = input.next();
-                    pet = controllerPet.findPetName(pets, namePetAddCommand);
-                    if (checkingNameForNull(pet)) break;
-                    pet.addCommand(command);
-                    System.out.println("Команда \"" + command + "\" для " + pet.getName() + " добавлена.");
-                    System.out.println("=".repeat(50) + "\n");
-                    break;
-                case 5:
-                    System.out.println("Всего Вам хорошего!");
-                    input.close();
-                    return;
+                switch (answer) {
+                    case 1:
+                        pets.add(addPet(counter));
+                        System.out.println("=".repeat(50) + "\n");
+                        break;
+                    case 2:
+                        if (checkingForThePresenceOfPets(pets)) break;
+                        System.out.println("=".repeat(50) + "\n");
+                        break;
+                    case 3:
+                        if (checkingForThePresenceOfPets(pets)) break;
+                        System.out.println("Введите имя животного, список команд которого хотите увидеть.");
+                        String namePet = input.next();
+                        pet = controllerPet.findPetName(pets, namePet);
+                        if (checkingNameForNull(pet)) break;
+                        printCommand(pet.getCommands());
+                        System.out.println("=".repeat(50) + "\n");
+                        break;
+                    case 4:
+                        if (checkingForThePresenceOfPets(pets)) break;
+                        System.out.println("Введите имя животного, которому хотите добавить команду.");
+                        String namePetAddCommand = input.next();
+                        System.out.println("Введите команду.");
+                        String command = input.next();
+                        pet = controllerPet.findPetName(pets, namePetAddCommand);
+                        if (checkingNameForNull(pet)) break;
+                        pet.addCommand(command);
+                        System.out.println("Команда \"" + command + "\" для " + pet.getName() + " добавлена.");
+                        System.out.println("=".repeat(50) + "\n");
+                        break;
+                    case 5:
+                        System.out.println("Всего Вам хорошего!");
+                        input.close();
+                        return;
+                }
+
             }
-
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
 
     }
 
-    private Pet addPet() {
+    private Pet addPet(Counter counter) {
         String name, sexOfPet, breed, breedClassification, command;
         Kind[] kind = Kind.values();
         Pet pet;
@@ -91,6 +96,10 @@ public class ControllerMenu {
                     System.out.println("Введите команду: ");
                     command = input.next();
 
+                    if (!name.isEmpty() && !sexOfPet.isEmpty() && !breed.isEmpty() && !command.isEmpty()) {
+                        counter.add();
+                    }
+
                     pet = controllerPet.getPet(name, sexOfPet, breed, command);
                     System.out.println("Вы завели " + pet.toString());
                     return pet;
@@ -110,6 +119,11 @@ public class ControllerMenu {
                     System.out.println("Введите команду: ");
                     command = input.next();
 
+                    if (!name.isEmpty() && !sexOfPet.isEmpty() && !breed.isEmpty() && !breedClassification.isEmpty() &&
+                            !command.isEmpty()) {
+                        counter.add();
+                    }
+
                     pet = controllerPet.getPet(name, sexOfPet, breed, breedClassification, command);
                     System.out.println("Вы завели " + pet.toString());
                     return pet;
@@ -126,6 +140,10 @@ public class ControllerMenu {
 
                     System.out.println("Введите команду: ");
                     command = input.next();
+
+                    if (!name.isEmpty() && !sexOfPet.isEmpty() && (kind != null || kind.length != 0) && !command.isEmpty()) {
+                        counter.add();
+                    }
 
                     pet = controllerPet.getPet(name, sexOfPet, kind[kindNumber - 1], command);
                     System.out.println("Вы завели " + pet.toString());
